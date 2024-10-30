@@ -23,7 +23,7 @@ function CategoryBar() {
   }, []);
 
   return (
-    <nav className="flex w-full justify-between px-8 py-4 ">
+    <nav className="flex w-full justify-between px-8 py-2 ">
       <div className={`flex space-x-6 text-slate-700 text-sm ${fontSize}`}>
         <Link to="/movies" className="hover:text-pink-500">
           Movies
