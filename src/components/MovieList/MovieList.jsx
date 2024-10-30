@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import MovieCard from "../MovieCard/MovieCard";
+import Loader from "../Loader/Loader"; // Import the Loader component
 
 const useMoviesToShowCount = () => {
   const [moviesToShowCount, setMoviesToShowCount] = useState(5);
@@ -35,11 +36,13 @@ const useMoviesToShowCount = () => {
 function MovieList() {
   const [movies, setMovies] = useState([]);
   const [startIndex, setStartIndex] = useState(0);
+  const [loading, setLoading] = useState(true); // Initialize loading state
   const moviesToShowCount = useMoviesToShowCount();
   const moviesToShow = movies.slice(startIndex, startIndex + moviesToShowCount);
   const navigate = useNavigate();
 
   const fetchMovies = async () => {
+    setLoading(true); // Set loading to true at the start of fetching
     try {
       const movieTitles = [
         "Oppenheimer",
@@ -62,7 +65,7 @@ function MovieList() {
       const fetchedMovies = await Promise.all(
         movieTitles.map(async (title) => {
           const response = await fetch(
-            `https://www.omdbapi.com/?t=${title}&apikey=cd84a7a2`
+            `https://www.omdbapi.com/?t=${title}&apikey=${import.meta.env.VITE_API_KEY}`
           );
           const data = await response.json();
           return data;
@@ -73,6 +76,7 @@ function MovieList() {
     } catch (error) {
       console.error("Error fetching movies:", error);
     }
+    setLoading(false); // Set loading to false once data is fetched
   };
 
   useEffect(() => {
@@ -97,31 +101,35 @@ function MovieList() {
           See All
         </Link>
       </div>
-      <div className="flex items-center">
-        <button
-          onClick={scrollLeft}
-          className="p-2 px-3 py-2 text-white text-xl bg-gray-500 rounded-full hover:bg-pink-600"
-          disabled={startIndex === 0}
-        >
-          &#8249;
-        </button>
-        <div className="flex justify-center self-center m-auto space-x-4 overflow-hidden">
-          {moviesToShow.map((movie, index) => (
-            <MovieCard
-              key={index}
-              movie={movie}
-              onClick={() => navigate(`/movie/${movie.Title}`)} 
-            />
-          ))}
+      {loading ? ( // Show loader when data is still loading
+        <Loader />
+      ) : (
+        <div className="flex items-center">
+          <button
+            onClick={scrollLeft}
+            className="p-2 px-3 py-2 text-white text-xl bg-gray-500 rounded-full hover:bg-pink-600"
+            disabled={startIndex === 0}
+          >
+            &#8249;
+          </button>
+          <div className="flex justify-center self-center m-auto space-x-4 overflow-hidden">
+            {moviesToShow.map((movie, index) => (
+              <MovieCard
+                key={index}
+                movie={movie}
+                onClick={() => navigate(`/movie/${movie.Title}`)} 
+              />
+            ))}
+          </div>
+          <button
+            onClick={scrollRight}
+            className="p-2 px-3 py-2 text-white text-xl bg-gray-500 rounded-full hover:bg-pink-600"
+            disabled={startIndex >= movies.length - moviesToShowCount}
+          >
+            &#8250;
+          </button>
         </div>
-        <button
-          onClick={scrollRight}
-          className="p-2 px-3 py-2 text-white text-xl bg-gray-500 rounded-full hover:bg-pink-600"
-          disabled={startIndex >= movies.length - moviesToShowCount}
-        >
-          &#8250;
-        </button>
-      </div>
+      )}
     </div>
   );
 }
